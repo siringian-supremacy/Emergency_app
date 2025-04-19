@@ -1,0 +1,16 @@
+{
+  "name": "Emergency Services App",
+  "short_name": "EmergencyApp",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d3557",
+  "description": "An emergency app to quickly alert police, health or fire services silently with location.",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/AYMaR8a.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
