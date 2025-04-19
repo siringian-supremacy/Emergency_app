@@ -1,1 +1,112 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emergency Services App</title>  <!-- App icon and PWA-compatible favicon -->  <link rel="icon" href="https://i.imgur.com/AYMaR8a.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://i.imgur.com/AYMaR8a.png" />
+  <meta name="theme-color" content="#1d3557" />  <!-- PWA Metadata embedded directly -->  <link rel="manifest" href="data:application/manifest+json,{
+    \"name\":\"Emergency Services App\",
+    \"short_name\":\"EmergencyApp\",
+    \"start_url\":\".\",
+    \"display\":\"standalone\",
+    \"background_color\":\"#ffffff\",
+    \"theme_color\":\"#1d3557\",
+    \"icons\":[{
+      \"src\":\"https://i.imgur.com/AYMaR8a.png\",
+      \"sizes\":\"512x512\",
+      \"type\":\"image/png\"
+    }]
+  }" />  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 2em;
+      background: #f8f9fa;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    .contacts input {
+      display: block;
+      margin: 0.5em 0;
+      padding: 0.5em;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .btn {
+      display: block;
+      margin: 1em auto;
+      padding: 1em;
+      font-size: 1.2em;
+      border: none;
+      width: 80%;
+      color: white;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .btn-police { background: #1d3557; }
+    .btn-health { background: #e63946; }
+    .btn-fire   { background: #f77f00; }
+  </style></head>
+<body>
+  <div id="setup">
+    <h1>Emergency Setup</h1>
+    <p>Enter up to 4 emergency contact phone numbers. At least one is required.</p>
+    <div class="contacts">
+      <input type="tel" placeholder="Contact 1 (required)" id="contact1">
+      <input type="tel" placeholder="Contact 2 (optional)" id="contact2">
+      <input type="tel" placeholder="Contact 3 (optional)" id="contact3">
+      <input type="tel" placeholder="Contact 4 (optional)" id="contact4">
+    </div>
+    <button class="btn btn-health" onclick="saveContacts()">Save & Continue</button>
+  </div>  <div id="main" class="hidden">
+    <h2>Emergency Services</h2>
+    <button class="btn btn-police" onclick="triggerAlert('POLICE')">Police</button>
+    <button class="btn btn-health" onclick="triggerAlert('HEALTH')">Health Emergency</button>
+    <button class="btn btn-fire" onclick="triggerAlert('FIRE')">Fire Emergency</button>
+  </div>  <script>
+    function saveContacts() {
+      const contacts = [];
+      for (let i = 1; i <= 4; i++) {
+        const value = document.getElementById(`contact${i}`).value.trim();
+        if (value) contacts.push(value);
+      }
+      if (contacts.length === 0) {
+        alert("Please enter at least one contact.");
+        return;
+      }
+      localStorage.setItem("emergencyContacts", JSON.stringify(contacts));
+      localStorage.setItem("setupComplete", "true");
+      showMain();
+    }
 
+    function showMain() {
+      document.getElementById("setup").classList.add("hidden");
+      document.getElementById("main").classList.remove("hidden");
+    }
+
+    function triggerAlert(type) {
+      const contacts = JSON.parse(localStorage.getItem("emergencyContacts") || "[]");
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(pos => {
+        const message = `${type} EMERGENCY!\nLocation: https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        const smsLink = `sms:${contacts[0]}?body=${encodeURIComponent(message)}`;
+        const whatsappLink = `https://wa.me/${contacts[0].replace(/^\+/, '')}?text=${encodeURIComponent(message)}`;
+
+        const useWhatsApp = confirm("Send alert via WhatsApp? Press Cancel to use SMS.");
+        window.location.href = useWhatsApp ? whatsappLink : smsLink;
+      }, () => {
+        alert("Unable to get location");
+      });
+    }
+
+    if (localStorage.getItem("setupComplete")) showMain();
+  </script></body>
+</html>
